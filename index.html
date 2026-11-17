@@ -39,24 +39,48 @@ button{cursor:pointer}
 }
 .top-actions .register{background:var(--purple)}
 
-.layout{display:flex;min-height:calc(100vh - 65px)}
+.layout{display:flex;min-height:calc(100vh - 65px);overflow:hidden;}
+
+/* SIDEBAR SMOOTH ANIMATION (DEFAULT TERSEMBUNYI) */
 .sidebar{
-  width:220px;flex-shrink:0;background:#100d18;
-  border-right:1px solid #282033;padding:18px 12px;transition:.25s;
+  width:220px;
+  flex-shrink:0;
+  background:#100d18;
+  border-right:1px solid #282033;
+  padding:18px 12px;
+  transform: translateX(-100%);
+  width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  border-right: none;
+  visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.sidebar.hidden{display:none}
+
+/* KETIKA TOMBOL DIKLIK (MUNCUL) */
+.sidebar.show{
+  transform: translateX(0);
+  width: 220px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-right: 1px solid #282033;
+  visibility: visible;
+}
+
 .side-title{
   color:#81778f;font-size:11px;font-weight:bold;
   margin:17px 10px 9px;text-transform:uppercase;
+  white-space: nowrap;
 }
 .nav-item{
   display:block;width:100%;text-align:left;border:0;
   background:transparent;color:#c8c0d4;padding:12px 13px;
   border-radius:8px;margin:3px 0;font-size:14px;
+  white-space: nowrap;
 }
 .nav-item:hover,.nav-item.active{background:#28183b;color:#d6a3ff}
 
-.main{flex:1;min-width:0;padding:20px}
+.main{flex:1;min-width:0;padding:20px;transition: margin-left 0.3s ease;}
 .hero{
   width:100%;aspect-ratio:16/5;min-height:150px;
   background-image:url('https://i.ibb.co/5hyWwBdx/viox-hero.webp');
@@ -155,6 +179,12 @@ button{cursor:pointer}
   .sidebar{
     position:fixed;top:65px;bottom:0;left:0;z-index:30;
     box-shadow:10px 0 25px #0008;
+  }
+  .sidebar.show{
+    width:220px;
+    padding-left:12px;
+    padding-right:12px;
+    border-right:1px solid #282033;
   }
   .main{padding:13px}
   .video-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -281,7 +311,7 @@ const itemsPerPage=4;
 let pushTimer=null;
 
 function toggleSidebar(){
-  document.getElementById("sidebar").classList.toggle("hidden");
+  document.getElementById("sidebar").classList.toggle("show");
 }
 
 function handleSearch(){
@@ -302,11 +332,9 @@ function renderVideos(){
 
   document.getElementById("videoCount").textContent=filtered.length+" video";
   
-  // Hitung total halaman
   const totalPages=Math.ceil(filtered.length/itemsPerPage)||1;
   if(currentPage>totalPages) currentPage=totalPages;
 
-  // Ambil data untuk halaman aktif
   const start=(currentPage-1)*itemsPerPage;
   const paginatedItems=filtered.slice(start,start+itemsPerPage);
 
