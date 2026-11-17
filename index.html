@@ -1,127 +1,479 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidoy - Video Player</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            background-color: #0b0c10;
-            color: #ffffff;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIOX - Premium Collection</title>
+
+<style>
+:root{
+  --bg:#08070d;
+  --panel:#11101a;
+  --purple:#8b35e8;
+  --purple2:#b45cff;
+  --text:#f7f3ff;
+  --muted:#aaa2b8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+
+.topbar{
+  height:65px;background:#100d18;border-bottom:1px solid #282033;
+  display:flex;align-items:center;gap:14px;padding:0 18px;
+  position:sticky;top:0;z-index:20;
+}
+.menu-btn{border:0;background:none;color:white;font-size:27px;padding:3px}
+.logo{font-size:27px;font-weight:900;letter-spacing:2px;color:white}
+.logo span{color:var(--purple2)}
+.search-wrap{flex:1;max-width:520px}
+.search-wrap input{
+  width:100%;padding:11px 14px;background:#211a2d;
+  border:1px solid #39294c;border-radius:8px;color:white;outline:none;
+}
+.top-actions{margin-left:auto;display:flex;gap:8px}
+.top-actions button{
+  border:1px solid var(--purple);background:transparent;color:white;
+  padding:9px 13px;border-radius:7px;font-size:12px;
+}
+.top-actions .register{background:var(--purple)}
+
+.layout{display:flex;min-height:calc(100vh - 65px)}
+.sidebar{
+  width:220px;flex-shrink:0;background:#100d18;
+  border-right:1px solid #282033;padding:18px 12px;transition:.25s;
+}
+.sidebar.hidden{display:none}
+.side-title{
+  color:#81778f;font-size:11px;font-weight:bold;
+  margin:17px 10px 9px;text-transform:uppercase;
+}
+.nav-item{
+  display:block;width:100%;text-align:left;border:0;
+  background:transparent;color:#c8c0d4;padding:12px 13px;
+  border-radius:8px;margin:3px 0;font-size:14px;
+}
+.nav-item:hover,.nav-item.active{background:#28183b;color:#d6a3ff}
+
+.main{flex:1;min-width:0;padding:20px}
+.hero{
+  width:100%;aspect-ratio:16/5;min-height:150px;
+  background-image:url('https://i.ibb.co/5hyWwBdx/viox-hero.webp');
+  background-size:100% 100%;background-position:center;
+  background-repeat:no-repeat;border-radius:12px;margin-bottom:25px;
+}
+.section-head{
+  display:flex;justify-content:space-between;align-items:center;margin:20px 0 14px;
+}
+.section-head h2{font-size:19px;margin:0}
+.section-head small{color:var(--muted)}
+.video-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.video-card{min-width:0;cursor:pointer}
+.thumb-wrap{position:relative;overflow:hidden;border-radius:9px;background:#1c1726}
+.video-card img{
+  display:block;width:100%;aspect-ratio:16/10;object-fit:cover;transition:transform .25s;
+}
+.video-card:hover img{transform:scale(1.05)}
+.video-tag{
+  position:absolute;top:8px;left:8px;background:#812fe1;
+  color:white;font-size:10px;padding:5px 7px;border-radius:4px;
+}
+.video-title{font-size:13px;font-weight:bold;line-height:1.4;margin:9px 0 5px}
+.video-meta{font-size:11px;color:var(--muted)}
+.empty{color:var(--muted);padding:25px 0}
+
+/* PAGINATION STYLING */
+.pagination{
+  display:flex;justify-content:center;align-items:center;gap:8px;margin-top:35px;
+}
+.page-btn{
+  background:#171222;border:1px solid #38264d;color:#f7f3ff;
+  padding:8px 14px;border-radius:6px;font-weight:bold;cursor:pointer;
+  transition:all .2s;
+}
+.page-btn:hover{background:#28183b;border-color:var(--purple2)}
+.page-btn.active{background:var(--purple);border-color:var(--purple);color:white}
+
+.footer{border-top:1px solid #282033;color:#81778f;text-align:center;padding:25px;margin-top:35px;font-size:12px}
+
+.modal{
+  display:none;position:fixed;inset:0;background:#000e;z-index:50;
+  align-items:center;justify-content:center;padding:15px;
+}
+.modal.show{display:flex}
+.player-box{
+  width:min(900px,100%);background:#110e18;
+  border:1px solid #38264d;border-radius:12px;overflow:hidden;
+}
+.player-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;gap:12px}
+.player-head strong{font-size:14px}
+.close-btn{background:#2b2037;border:0;color:white;border-radius:6px;padding:8px 12px}
+.player-frame{background:#000;aspect-ratio:16/9}
+.player-frame iframe{width:100%;height:100%;border:0}
+
+.age-box{
+  background:#151020;border:1px solid #6733a0;
+  width:min(400px,100%);padding:28px;border-radius:13px;text-align:center;
+}
+.age-box h2{margin-top:0}
+.age-box p{color:#b9afc7;font-size:13px;line-height:1.6}
+.primary-btn{
+  border:0;background:var(--purple);color:white;
+  padding:12px 18px;border-radius:7px;font-weight:bold;
+}
+.age-box .primary-btn{width:100%;margin-top:12px}
+.secondary-btn{
+  background:transparent;color:#c9b6df;border:1px solid #554066;
+  padding:10px 15px;border-radius:7px;margin-top:10px;
+}
+
+.push-overlay{
+  display:none;position:fixed;inset:0;background:#0009;z-index:70;
+  align-items:flex-end;justify-content:flex-end;padding:20px;
+}
+.push-overlay.show{display:flex}
+.push-card{
+  width:min(340px,100%);background:#171222;
+  border:1px solid #7540a4;border-radius:12px;padding:18px;
+  box-shadow:0 10px 40px #0009;
+}
+.push-top{display:flex;align-items:center;justify-content:space-between}
+.push-label{font-size:10px;color:#c18aff;font-weight:bold;letter-spacing:1px}
+.push-close{background:#30243d;color:white;border:0;border-radius:6px;padding:6px 10px}
+.push-card h3{font-size:17px;margin:13px 0 7px}
+.push-card p{font-size:13px;color:#b9afc7;line-height:1.5;margin:0 0 14px}
+.push-actions{display:flex;gap:8px}
+.push-actions button{flex:1}
+.push-sponsor{background:var(--purple);color:white;border:0;padding:10px;border-radius:7px;font-weight:bold}
+.push-dismiss{background:#2b2434;color:white;border:1px solid #554765;padding:10px;border-radius:7px}
+
+@media(max-width:1000px){
+  .video-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .sidebar{
+    position:fixed;top:65px;bottom:0;left:0;z-index:30;
+    box-shadow:10px 0 25px #0008;
+  }
+  .main{padding:13px}
+  .video-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .hero{aspect-ratio:16/7;min-height:110px}
+  .logo{font-size:22px}
+  .topbar{padding:0 10px;gap:9px}
+  .top-actions button{padding:8px;font-size:10px}
+  .search-wrap input{padding:9px;font-size:12px}
+  .push-overlay{padding:12px}
+  .push-card{width:100%}
+}
+@media(max-width:380px){
+  .top-actions .login{display:none}
+  .video-title{font-size:12px}
+}
+</style>
 </head>
-<body class="min-h-screen flex flex-col">
 
-    <!-- Header / Navbar -->
-    <header class="w-full py-4 px-6 md:px-12 flex items-center justify-between border-b border-gray-800/50">
-        <div class="flex items-center gap-2">
-            <div class="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-2 rounded-lg flex items-center justify-center font-bold text-xl shadow-lg shadow-pink-500/20">
-                <i class="fa-solid fa-play text-sm"></i>
-            </div>
-            <span class="text-2xl font-black tracking-wider italic">vidoy</span>
-        </div>
-        <div>
-            <button class="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium px-5 py-2.5 rounded-full flex items-center gap-2 shadow-lg shadow-pink-500/20 transition-all duration-200">
-                <i class="fa-solid fa-arrow-up-from-bracket"></i> Upload
-            </button>
-        </div>
-    </header>
+<body>
 
-    <!-- Main Content -->
-    <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
-        
-        <!-- Video Player Container -->
-        <div class="relative w-full aspect-[9/16] md:aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-gray-800 group flex items-center justify-center">
-            
-            <!-- Video Thumbnail -->
-            <img src="https://i.ibb.co/4wsHyS8n/1793065681242.jpg" alt="Video Cover" class="absolute inset-0 w-full h-full object-cover opacity-80">
-            
-            <!-- Dark Gradient Overlay -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40"></div>
+<header class="topbar">
+  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  <div class="logo">VI<span>OX</span></div>
+  <div class="search-wrap">
+    <input id="searchInput" type="search" placeholder="Cari video..." oninput="handleSearch()">
+  </div>
+  <div class="top-actions">
+    <button class="login" onclick="alert('Fitur login belum diaktifkan.')">Login</button>
+    <button class="register" onclick="alert('Fitur pendaftaran belum diaktifkan.')">Daftar</button>
+  </div>
+</header>
 
-            <!-- Top Controls -->
-            <div class="absolute top-4 right-4 flex items-center gap-4 text-white">
-                <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center hover:bg-black/60 transition">
-                    <i class="fa-solid fa-volume-high"></i>
-                </button>
-                <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center hover:bg-black/60 transition">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
-            </div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-title">Menu Utama</div>
+    <button class="nav-item active" onclick="setCategory('all',this)">⌂ &nbsp; Home</button>
+    <button class="nav-item" onclick="setSection('trending',this)">🔥 &nbsp; Trending</button>
+    <button class="nav-item" onclick="setSection('latest',this)">◷ &nbsp; Terbaru</button>
+    <button class="nav-item" onclick="showFavorites(this)">♥ &nbsp; Favorit</button>
 
-            <!-- Center Big Play Button (Redirect to Exastream) -->
-            <button onclick="redirectToExastream()" class="absolute w-16 h-16 md:w-20 md:h-20 bg-pink-500 hover:bg-pink-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-pink-500/40 transition transform hover:scale-105 cursor-pointer">
-                <i class="fa-solid fa-play text-2xl md:text-3xl ml-1"></i>
-            </button>
+    <div class="side-title">Kategori</div>
+    <button class="nav-item" onclick="setCategory('Popular',this)">Popular</button>
+    <button class="nav-item" onclick="setCategory('HD',this)">HD Videos</button>
+    <button class="nav-item" onclick="setCategory('Featured',this)">Featured</button>
+  </aside>
 
-            <!-- Watermark Text -->
-            <div class="absolute bottom-16 left-6 text-sm text-gray-200 font-medium">
-                Ini Pak Sean Hall.
-            </div>
+  <main class="main">
+    <div class="hero"></div>
+    <div class="section-head">
+      <h2 id="sectionTitle">Video Pilihan</h2>
+      <small id="videoCount"></small>
+    </div>
+    <div class="video-grid" id="videoGrid"></div>
+    <div class="pagination" id="pagination"></div>
+    <div class="footer">VIOX · PREMIUM COLLECTION</div>
+  </main>
+</div>
 
-            <!-- Bottom Controls Bar -->
-            <div class="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-2 bg-gradient-to-t from-black/90 to-transparent">
-                <div class="flex items-center gap-3">
-                    <button class="text-white hover:text-pink-400 transition">
-                        <i class="fa-solid fa-play text-sm"></i>
-                    </button>
-                    <!-- Progress Bar (Digeser ke kiri pol) -->
-                    <div class="flex-1 relative h-1.5 bg-white/30 rounded-full cursor-pointer">
-                        <div class="absolute top-0 left-0 h-full w-[0%] bg-pink-500 rounded-full"></div>
-                        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-3 h-3 bg-pink-500 rounded-full shadow"></div>
-                    </div>
-                    <!-- Waktu Diubah Menjadi 23:47 -->
-                    <span class="text-xs text-gray-300 font-mono">23:47</span>
-                    <div class="flex items-center gap-3 text-gray-300">
-                        <button class="hover:text-white transition"><i class="fa-solid fa-up-right-from-square"></i></button>
-                        <button class="hover:text-white transition"><i class="fa-solid fa-expand"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- KONFIRMASI USIA -->
+<div class="modal show" id="ageGate">
+  <div class="age-box">
+    <h2>Selamat Datang di VIOX</h2>
+    <p>Website ini ditujukan khusus untuk pengunjung berusia 18 tahun ke atas. Dengan melanjutkan, Anda menyatakan telah berusia minimal 18 tahun.</p>
+    <button class="primary-btn" onclick="confirmAge()">SAYA 18+</button>
+    <button class="secondary-btn" onclick="leaveSite()">Kembali</button>
+  </div>
+</div>
 
-        <!-- Video Title -->
-        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white leading-snug">
-            Aku Rela Jadi Simpanan Demi Selamatkan Adikku
-        </h1>
+<!-- PEMUTAR VIDEO -->
+<div class="modal" id="playerModal" onclick="outsidePlayerClose(event)">
+  <div class="player-box">
+    <div class="player-head">
+      <strong id="playerTitle">Video</strong>
+      <button class="close-btn" onclick="closePlayer()">✕ Tutup</button>
+    </div>
+    <div class="player-frame" id="playerFrame"></div>
+  </div>
+</div>
 
-        <!-- Metadata Badges -->
-        <div class="flex flex-wrap items-center gap-3 text-sm text-gray-300">
-            <div class="flex items-center gap-2 bg-[#161821] border border-gray-800 px-4 py-2.5 rounded-xl">
-                <i class="fa-regular fa-clock text-pink-500"></i>
-                <span>23:47</span>
-            </div>
-            <div class="flex items-center gap-2 bg-[#161821] border border-gray-800 px-4 py-2.5 rounded-xl">
-                <i class="fa-solid fa-database text-pink-500"></i>
-                <span>26.9 MB</span>
-            </div>
-            <div class="flex items-center gap-2 bg-[#161821] border border-gray-800 px-4 py-2.5 rounded-xl">
-                <i class="fa-regular fa-eye text-pink-500"></i>
-                <span>927k views</span>
-            </div>
-        </div>
+<!-- IN PAGE PUSH -->
+<div class="push-overlay" id="pushOverlay">
+  <div class="push-card">
+    <div class="push-top">
+      <span class="push-label">KONTEN SPONSOR</span>
+      <button class="push-close" onclick="closePushWithSponsor()">✕</button>
+    </div>
+    <h3>Jangan Lewatkan Penawaran Ini</h3>
+    <p>Kunjungi halaman sponsor untuk melihat informasi dan penawaran lainnya.</p>
+    <div class="push-actions">
+      <button class="push-sponsor" onclick="openSponsor()">Kunjungi Sponsor</button>
+      <button class="push-dismiss" onclick="closePushWithSponsor()">Tutup</button>
+    </div>
+  </div>
+</div>
 
-        <div class="inline-flex items-center gap-2.5 bg-[#161821] border border-gray-800 px-4 py-2.5 rounded-xl w-fit text-sm text-gray-300">
-            <i class="fa-regular fa-calendar text-pink-500"></i>
-            <span>12 September 2026</span>
-        </div>
+<script>
+const SMARTLINK_URL =
+"https://www.profitableratecpmnetwork.com/hh55phupz7?key=035891703dff41ba6e0911050a5989af";
 
-    </main>
+const videos = [
+{id:1,title:"Malam Penuh Rahasia",thumb:"https://i.ibb.co.com/M52PQp5p/1793767574587.jpg",embed:"https://vidara.to/e/6MYufgneOxBof",category:"Popular",section:"trending"},
+{id:2,title:"Kisah Privat di Balik Pintu",thumb:"https://i.ibb.co.com/7dfrRv4k/1793129144788.jpg",embed:"https://vidara.to/e/Fmceiww0BiSCt",category:"HD",section:"trending"},
+{id:3,title:"Momen Intim yang Menggoda",thumb:"https://i.ibb.co.com/9mBnCGtS/1793767589103.jpg",embed:"https://vidara.to/e/rqu5mnTAhToiD",category:"Featured",section:"trending"},
+{id:4,title:"Pertemuan Dewasa yang Berkesan",thumb:"https://i.ibb.co.com/4wsHyS8n/1793065681242.jpg",embed:"https://vidara.to/e/8os0TAxgXvjn9",category:"Popular",section:"trending"},
+{id:5,title:"Sensasi Malam yang Berbeda",thumb:"https://i.ibb.co.com/v4gL0StF/1793767490790.jpg",embed:"https://vidara.to/e/SxbLp5o8S8Lh6",category:"HD",section:"trending"},
+{id:6,title:"Rahasia di Waktu Senggang",thumb:"https://i.ibb.co.com/Z6qpYMWZ/IMG-20261104-100544-611.jpg",embed:"https://vidara.to/e/YKoI84z0JcYfS",category:"Featured",section:"trending"},
+{id:7,title:"Godaan dalam Suasana Privat",thumb:"https://i.ibb.co.com/0VXctt0x/1793767508529.jpg",embed:"https://vidara.to/e/DNUUfuqM6zvmX",category:"Popular",section:"trending"},
+{id:8,title:"Kisah Dewasa Tanpa Batas",thumb:"https://i.ibb.co.com/qMDYTsbY/ae5557d0a21d9be9169a2019329f8e5d.jpg",embed:"https://vidara.to/e/jK9YT12LdMuSy",category:"HD",section:"trending"},
+{id:9,title:"Momen Spesial Berdua",thumb:"https://i.ibb.co.com/3mr8M7v7/1793767600887.jpg",embed:"https://vidara.to/e/LJSJcdJH8FtRg",category:"Featured",section:"latest"},
+{id:10,title:"Cerita Rahasia di Malam Hari",thumb:"https://i.ibb.co.com/Rqw6xhJ/1790091869047.jpg",embed:"https://vidara.to/e/W5T1ItJ3Ek9JI",category:"Popular",section:"latest"},
+{id:11,title:"Suasana Privat yang Menggoda",thumb:"https://i.ibb.co.com/xKxy1wqZ/1793767469519.jpg",embed:"https://vidara.to/e/9b7s8LsHRvdHu",category:"HD",section:"latest"},
+{id:12,title:"Kisah Dewasa di Balik Layar",thumb:"https://i.ibb.co.com/cS2QGnLf/e89771e819d28a1ae0388d2af852d2f9.jpg",embed:"https://vidara.to/e/RAGNAVK2UPO2i",category:"Featured",section:"latest"},
+{id:13,title:"Malam yang Sulit Dilupakan",thumb:"https://i.ibb.co.com/v6tCJFCc/1793767451951.jpg",embed:"https://vidara.to/e/bAWc4NVlSRoGo",category:"Popular",section:"latest"},
+{id:14,title:"Rahasia Pertemuan Berdua",thumb:"https://i.ibb.co.com/4ZsVhJkR/1790091907304.jpg",embed:"https://vidara.to/e/SdTDMaDEcUzsy",category:"HD",section:"latest"},
+{id:15,title:"Kejutan dalam Momen Privat",thumb:"https://i.ibb.co.com/2H47tZc/IMG-20261104-100540-372.jpg",embed:"https://vidara.to/e/lTWjsL7GhqE1y",category:"Featured",section:"latest"},
+{id:16,title:"Cerita Eksklusif untuk Dewasa",thumb:"https://i.ibb.co.com/DPBQHxhZ/1793767445024.jpg",embed:"https://vidara.to/e/Xv58ogfJLLEh2",category:"Popular",section:"latest"}
+];
 
-    <!-- JavaScript untuk Redirect ke Exastream -->
-    <script>
-        function redirectToExastream() {
-            window.location.href = 'https://trbnvideo.live/v/O6iFeyex';
-        }
-    </script>
+let activeCategory="all";
+let activeSection="all";
+let favoritesOnly=false;
+let currentPage=1;
+const itemsPerPage=4;
+let pushTimer=null;
 
-    <!-- Skrip Popunder Adsterra -->
-    <script src="https://pl31329010.profitableratecpmnetwork.com/0d/46/4d/0d464d59339b563e7d92eec0076a9552.js"></script>
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("hidden");
+}
+
+function handleSearch(){
+  currentPage=1;
+  renderVideos();
+}
+
+function renderVideos(){
+  const query=document.getElementById("searchInput").value.toLowerCase().trim();
+
+  const filtered=videos.filter(video=>{
+    const categoryMatch=activeCategory==="all"||video.category===activeCategory;
+    const sectionMatch=activeSection==="all"||video.section===activeSection;
+    const favoriteMatch=!favoritesOnly||getFavorites().includes(video.id);
+    const searchMatch=video.title.toLowerCase().includes(query);
+    return categoryMatch&&sectionMatch&&favoriteMatch&&searchMatch;
+  });
+
+  document.getElementById("videoCount").textContent=filtered.length+" video";
+  
+  // Hitung total halaman
+  const totalPages=Math.ceil(filtered.length/itemsPerPage)||1;
+  if(currentPage>totalPages) currentPage=totalPages;
+
+  // Ambil data untuk halaman aktif
+  const start=(currentPage-1)*itemsPerPage;
+  const paginatedItems=filtered.slice(start,start+itemsPerPage);
+
+  const grid=document.getElementById("videoGrid");
+
+  if(!paginatedItems.length){
+    grid.innerHTML='<div class="empty">Video tidak ditemukan.</div>';
+    document.getElementById("pagination").innerHTML="";
+    return;
+  }
+
+  grid.innerHTML=paginatedItems.map(video=>`
+    <article class="video-card" onclick="openPlayer(${video.id})">
+      <div class="thumb-wrap">
+        <img src="${video.thumb}" alt="${video.title}" loading="lazy"
+          onerror="this.style.opacity='.25'">
+        <span class="video-tag">${video.category}</span>
+      </div>
+      <div class="video-title">${video.title}</div>
+      <div class="video-meta">VIOX · Premium Collection</div>
+    </article>
+  `).join("");
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages){
+  const paginationEl=document.getElementById("pagination");
+  if(totalPages<=1){
+    paginationEl.innerHTML="";
+    return;
+  }
+
+  let html="";
+  for(let i=1; i<=totalPages; i++){
+    html+=`<button class="page-btn ${i===currentPage?'active':''}" onclick="changePage(${i})">${i}</button>`;
+  }
+  paginationEl.innerHTML=html;
+}
+
+function changePage(page){
+  currentPage=page;
+  renderVideos();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function getFavorites(){
+  try{return JSON.parse(localStorage.getItem("vioxFavorites")||"[]")}
+  catch(e){return []}
+}
+
+function toggleFavorite(id){
+  let favorites=getFavorites();
+  favorites=favorites.includes(id)?favorites.filter(item=>item!==id):[...favorites,id];
+  localStorage.setItem("vioxFavorites",JSON.stringify(favorites));
+  renderVideos();
+}
+
+function setCategory(category,button){
+  activeCategory=category;
+  activeSection="all";
+  favoritesOnly=false;
+  currentPage=1;
+  updateActive(button);
+  document.getElementById("sectionTitle").textContent=
+    category==="all"?"Video Pilihan":category+" Videos";
+  renderVideos();
+}
+
+function setSection(section,button){
+  activeSection=section;
+  activeCategory="all";
+  favoritesOnly=false;
+  currentPage=1;
+  updateActive(button);
+  document.getElementById("sectionTitle").textContent=
+    section==="trending"?"Trending Videos":"Video Terbaru";
+  renderVideos();
+}
+
+function showFavorites(button){
+  favoritesOnly=true;
+  activeCategory="all";
+  activeSection="all";
+  currentPage=1;
+  updateActive(button);
+  document.getElementById("sectionTitle").textContent="Video Favorit";
+  renderVideos();
+}
+
+function updateActive(button){
+  document.querySelectorAll(".nav-item").forEach(item=>item.classList.remove("active"));
+  if(button)button.classList.add("active");
+}
+
+/* KLIK VIDEO: SMARTLINK DIBUKA */
+function openPlayer(id){
+  const video=videos.find(item=>item.id===id);
+  if(!video)return;
+
+  window.open(SMARTLINK_URL,"_blank","noopener");
+
+  document.getElementById("playerTitle").textContent=video.title;
+  document.getElementById("playerFrame").innerHTML=`
+    <iframe src="${video.embed}" title="${video.title}" loading="lazy"
+      allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+  document.getElementById("playerModal").classList.add("show");
+  document.body.style.overflow="hidden";
+}
+
+function closePlayer(){
+  document.getElementById("playerModal").classList.remove("show");
+  document.getElementById("playerFrame").innerHTML="";
+  document.body.style.overflow="";
+}
+
+function outsidePlayerClose(event){
+  if(event.target.id==="playerModal")closePlayer();
+}
+
+/* KONFIRMASI USIA */
+function confirmAge(){
+  const sponsorTab=window.open(SMARTLINK_URL,"_blank");
+
+  if(!sponsorTab){
+    alert("Browser memblokir tab sponsor. Izinkan pop-up untuk website ini, lalu tekan SAYA 18+ kembali.");
+    return;
+  }
+
+  document.getElementById("ageGate").classList.remove("show");
+  schedulePush();
+}
+
+function leaveSite(){
+  window.location.href="about:blank";
+}
+
+/* IN-PAGE PUSH */
+function openSponsor(){
+  window.open(SMARTLINK_URL,"_blank","noopener");
+}
+
+function closePushWithSponsor(){
+  window.open(SMARTLINK_URL, "_blank", "noopener");
+  closePushAd();
+}
+
+function schedulePush(){
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(showPushAd,20000);
+}
+
+function showPushAd(){
+  document.getElementById("pushOverlay").classList.add("show");
+}
+
+function closePushAd(){
+  document.getElementById("pushOverlay").classList.remove("show");
+  schedulePush();
+}
+
+/* HALAMAN SELALU MEMULAI DENGAN KONFIRMASI USIA */
+document.addEventListener("DOMContentLoaded",()=>{
+  renderVideos();
+  document.getElementById("ageGate").classList.add("show");
+});
+</script>
 
 </body>
 </html>
